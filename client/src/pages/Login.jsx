@@ -1,31 +1,20 @@
 import React, {useState} from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../services/useAuthStore';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+
+
 const Login = () => {
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+      email:"",
+      password:"",
+    });
 
+  const {login } = useAuthStore();
   const handleSubmit = async (e) => {
-      e.preventDefault();
-
-      try {
-        const {data} = await api.post('user/sign-in',{
-          email, password
-        });
-
-        localStorage.setItem("chatUser", JSON.stringify(data));
-
-        navigate('/chat');
-      } catch (error) {
-        console.error('Login failed:', error.response?.data?.message || error.message);
-      alert('Invalid credentials');
-        
-      }
-
-  }
+    e.preventDefault();
+    login(formData);
+  };
 
 
 
@@ -44,13 +33,20 @@ const Login = () => {
         <form action="" method="post" onSubmit={handleSubmit}>
           <div className="pb-6">
             <label htmlFor="email" className="block text-sm font-small pb-3">Email</label>
-            <input type="email" id="email" placeholder="Email address" className="block w-full border border-gray-600 p-1.5 rounded-md"
-            onChange={(e) => setEmail(e.target.value)} />
+            <input 
+            type="email" 
+            id="email"
+            value={formData.email}
+            placeholder="Email address" 
+            className="block w-full border border-gray-600 p-1.5 rounded-md"
+            onChange={(e) => setFormData({...formData,email:e.target.value})} />
           </div>
 
           <div className="pb-6">
             <label htmlFor="password" className="block text-sm font-small pb-6">Password</label>
-            <input type="password" id="password" placeholder="Password (min. 6 character)" className="block w-full border border-gray-600 p-1.5 rounded-md" onChange={(e) => setPassword(e.target.value)}/>
+            <input type="password" id="password" placeholder="Password (min. 6 character)" className="block w-full border border-gray-600 p-1.5 rounded-md"
+            value={formData.password}
+            onChange={(e) => setFormData({...formData,password:e.target.value})}/>
           </div>
 
             {/* Primary button*/}
@@ -67,4 +63,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login;
