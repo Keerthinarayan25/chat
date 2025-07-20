@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { sendMessage, fetchMessage } from '../controllers/message.controller.js';
-
+import { sendMessage, getMessage, getUsersForSidebar } from '../controllers/message.controller.js';
+import { protect } from '../middleware/auth.middleware.js';
 
 const messageRouter = Router();
 
-messageRouter.post("/", sendMessage);
-messageRouter.get("/:chatId", fetchMessage);
+messageRouter.get("/users",protect, getUsersForSidebar);
+messageRouter.get("/:id",protect, getMessage);
+messageRouter.post("/send/:id",protect, sendMessage);
 
 export default messageRouter;

@@ -1,41 +1,30 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import api from "../services/api";
 
-const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+import { Link } from "react-router-dom";
+
+import { useAuthStore } from "../services/useAuthStore";
+
+const Signup = () => 
+{
+  const [formData, setFormData] = useState({
+    name:"",
+    email:"",
+    password:"",
+  });
+
+
+  const { signup } =  useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const { data } = await api.post("user/sign-up", {
-        name,
-        email,
-        password,
-      });
-
-      localStorage.setItem("userInfo", JSON.stringify(data.data.user));
-
-      navigate("/login");
-    } catch (error) {
-      console.error(
-        "Signup failed:",
-        error.response?.data?.message || error.message
-      );
-
-      // --- FIX: Alert the actual message from the server, or a generic signup error message.
-      // It is common for the backend API to return a 'message' property on error.
-      const errorMessage =
-        error.response?.data?.message || "Signup failed. Please try again.";
-      alert(errorMessage);
+    if(formData){
+      signup(formData);
     }
-  };
+    
 
+  };
+  
   return (
     <div className="flex justify-center items-center min-h-screen ">
       <div className="w-sm  p-7 shadow-2xl rounded-md">
@@ -59,9 +48,10 @@ const Signup = () => {
             <input
               type="text"
               id="name"
+              value={formData.name}
               placeholder="Enter your name"
               className="block w-full border border-gray-600 p-1.5 rounded-md"
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setFormData({...formData,name:e.target.value})}
             />
           </div>
 
@@ -72,9 +62,10 @@ const Signup = () => {
             <input
               type="email"
               id="email"
+              value={formData.email}
               placeholder="Email address"
               className="block w-full border border-gray-600 p-1.5 rounded-md"
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setFormData({...formData,email:e.target.value})}
             />
           </div>
 
@@ -85,9 +76,10 @@ const Signup = () => {
             <input
               type="password"
               id="password"
+              value={formData.password}
               placeholder="Password (min. 6 character)"
               className="block w-full border border-gray-600 p-1.5 rounded-md"
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setFormData({...formData,password:e.target.value})}
             />
           </div>
 

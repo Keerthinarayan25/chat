@@ -1,18 +1,21 @@
-import mongoose from "mongoose";
+
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
+import { generateToken } from "../utils/generateToken.js";
 
-
-export const signUp = async (req, res,next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+export const signUp = async (req, res) => {
+  const {name, email,password} = req.body;
+  
   try {
-    const {name, email,password} = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields required"
-    });
-}
+      return res.status(400).json({ message: "All fields required"});
+    }
+
+    if (password.length < 6){
+      return res.status(400).json({message:"Password must be at least 6 characters"});
+    }
+
     const existingUser = await User.findOne({email});
 
     if(existingUser){
@@ -23,94 +26,83 @@ export const signUp = async (req, res,next) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password,saltRounds);
 
-    const newUsers = await User.create([{
+    const newUsers = new User({
       name,
       email,
       password:hashedPassword
-    }],{session});
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({
-      success:true,
-      message:"user created successfully",
-      data:{
-        user:newUsers[0]
-      }
     });
-    
+
+    if(newUsers){
+      generateToken(newUsers._id, res);
+      await newUsers.save();
+
+      res.status(200).json({
+        _id: newUsers._id,
+        name: newUsers.name,
+        email: newUsers.email,
+      });
+    } else {
+      return res.status(400).json({message:"Invalid user data"});
+    } 
+
   } catch (error) {
-    console.log(error);
+    console.log("Error in signup controller",error.message);
     res.status(500).json({message:'Incorrect input'});
   }
 };
 
 
 
-export const signIn = async (req,res,next) =>{
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
+export const signIn = async (req,res) =>{
+  const {email,password} = req.body;
   try{
-    const {email,password} = req.body;
 
     const user = await User.findOne({email});
 
     if(!user){
-      throw new Error('User does not exist');
+      return res.status(400).json({message: "Invalid credentials"});
     }
 
     const isPasswordValid = await bcrypt.compare(password,user.password);
     
     if(!isPasswordValid){
-      const error = new Error('Invalid password');
-      error.statusCode = 401;
-      throw error;
+      return res.status(400).json({message: "Invalid credentials"});
     }
 
+    generateToken(user._id, res);
     res.status(200).json({
-      success:true,
-      message:'User signed in successfully',
-      data:{
-        user,
-      }
-    });
+      _id: user._id,
+      email: user.email,
+      name: user.name,
 
+    });
+  
   }catch(error){
-    next(error);
+    console.log("Error in login controller", error.message);
+    return res.status(500).json({message:"Internal Server Error"});
 
   }
 }
 
-export const signOut = async(req,res,next) => {
+export const signOut = async(req,res) => {
   try {
+    res.cookie("jwt","",{ maxAge:0});
     res.status(200).json({
       success:true,
       message:'Sign out successfully'
     });
   } catch (error) {
-    next(error);
+    console.log("Error in logout controller: ", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
 
-export const fetchAllUser = async (req, res) => {
-  try {
-    const { currentUserId } = req.query;
-    console.log("📥 currentUserId received:", currentUserId);
-
-    if (!currentUserId) {
-      return res.status(400).json({ message: "currentUserId is required" });
-    }
-
-    const users = await User.find({ _id: { $ne: currentUserId } }).select("-password");
-
-
-    res.status(200).json(users);
-  } catch (err) {
-    console.error("❌ Error fetching users:", err);
-    res.status(500).json({ message: "Error fetching users" });
+export const checkAuth = (req, res) => {
+  try{
+    res.status(200).json(req.user);
+  } catch(error){
+    console.log("Error in checkauth controller:",error.message);
+    return res.status(500).json({message:"Internal server error"});
   }
-};
-
+}
