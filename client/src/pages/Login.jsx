@@ -20,25 +20,25 @@ const Login = () => {
 
 
   return (
-    <div className="flex justify-center items-center min-h-screen ">
+    <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white px-4">
 
-      <div className="w-sm  p-7 shadow-2xl  rounded-xl">
+      <div className="w-sm  p-7 shadow-2xl  rounded-xl bg-gray-800">
         {/* header section */}
         <div className="flex flex-row justify-between pb-6">
-          <h1>Login </h1>
-          <h1> No Account?<strong className="text-gray-800 hover:underline cursor-pointer "><Link to="/signup"> Sign up</Link></strong>
+          <h1 className="text-2xl font-bold">Login </h1>
+          <h1> No Account?<strong className="text-white text-sm hover:underline cursor-pointer "><Link to="/signup"> Sign up</Link></strong>
           </h1>
         </div>
 
         <form action="" method="post" onSubmit={handleSubmit}>
           <div className="pb-6">
-            <label htmlFor="email" className="block text-sm font-small pb-3">Email</label>
+            <label htmlFor="email" className="block text-sm pb-3">Email</label>
             <input 
             type="email" 
             id="email"
             value={formData.email}
             placeholder="Email address" 
-            className="block w-full border border-gray-600 p-1.5 rounded-md"
+            className="block w-full border border-gray-600  p-1.5 rounded-md"
             onChange={(e) => setFormData({...formData,email:e.target.value})} />
           </div>
 
@@ -51,7 +51,7 @@ const Login = () => {
 
             {/* Primary button*/}
           <div> 
-            <button className="w-full p-3 bg-gray-900 hover:bg-gray-800  text-white cursor-pointer border border-transparent rounded-md" type="submit">Login</button>
+            <button className="w-full p-3 bg-gray-900 hover:bg-gray-700  text-white cursor-pointer border border-transparent rounded-md" type="submit">Login</button>
           </div>
 
         </form>

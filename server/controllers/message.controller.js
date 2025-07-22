@@ -1,7 +1,7 @@
 
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
-
+import { getReceiverSocketId,io } from "../utils/socket.js";
 
 
 export const getUsersForSidebar = async (req, res) => {
@@ -23,20 +23,27 @@ export const getUsersForSidebar = async (req, res) => {
 
 export const sendMessage = async(req , res) => {
   
-  const { content } = req.body;
+  const  {content}  = req.body;
   const {id: receiverId} = req.params;
   const senderId = req.user._id;
+  if(!content || content.trim() === ""){
 
-
+    return res.status(400).json({ error: "Content is required" });
+  }
   try {
 
-    let newMessage = await Message({
+    const newMessage = await Message({
       senderId,
       receiverId,
       content,
     });
     
     await newMessage.save();
+    console.log(newMessage);
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
     res.status(200).json(newMessage);
 
   } catch (err) {
@@ -52,7 +59,7 @@ export const sendMessage = async(req , res) => {
 export const getMessage = async(req,res) => {
   const { id: userToChatId } = req.params;
   const myId = req.user._id;
-  if(!id){
+  if(!userToChatId){
     return res.status(400).send("Chat Id required");
   }
 
@@ -65,6 +72,7 @@ export const getMessage = async(req,res) => {
     });
     res.status(200).json(messages);
   } catch(error){
-    res.status(500).json({error:"Failed to fetch messages",details:error});
+    console.log("Error in getMessages controller: ", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
