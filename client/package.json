@@ -13,6 +13,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
+    "chat": "file:..",
     "class-variance-authority": "^0.7.1",
     "client": "file:",
     "clsx": "^2.1.1",
