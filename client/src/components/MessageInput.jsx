@@ -9,7 +9,7 @@ const MessageInput = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
-    if (text.trim === "") return;
+    if (text.trim() === "") return;
 
     try {
       await sendMessages({
